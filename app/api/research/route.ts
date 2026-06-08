@@ -83,7 +83,12 @@ Respond ONLY with valid JSON.
       searchQueries.push(...groundingMetadata.webSearchQueries);
     }
 
-    const data = JSON.parse(resultText);
+    let data: unknown;
+    try {
+      data = JSON.parse(resultText);
+    } catch {
+      throw new Error("Gemini returned a response that could not be parsed as JSON.");
+    }
 
     return NextResponse.json({
       data,

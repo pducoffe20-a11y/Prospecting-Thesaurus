@@ -1,24 +1,21 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Plus, 
-  Trash2, 
-  Search, 
-  Mail, 
-  Copy, 
-  ExternalLink, 
-  Check, 
-  Loader2, 
-  Sparkles, 
-  FileText, 
-  Users, 
-  ArrowRight, 
-  Globe, 
-  Briefcase, 
+import {
+  Plus,
+  Trash2,
+  Search,
+  Copy,
+  ExternalLink,
+  Check,
+  Loader2,
+  Sparkles,
+  FileText,
+  Users,
+  Globe,
+  Briefcase,
   AlertCircle,
-  FileSpreadsheet,
   Upload,
   Database,
   RefreshCw,
@@ -118,20 +115,20 @@ export default function Page() {
       (currentUser, token) => {
         setUser(currentUser);
         setAccessToken(token);
-        loadAccounts(token);
+        loadAccounts(true);
       },
       () => {
         setUser(null);
         setAccessToken(null);
-        loadAccounts(null);
+        loadAccounts(false);
       }
     );
     return () => unsub();
   }, []);
 
-  const loadAccounts = async (token: string | null) => {
+  const loadAccounts = async (isAuthenticated: boolean) => {
     try {
-      if (token) {
+      if (isAuthenticated) {
         const list = await getAccounts();
         if (list.length === 0) {
           // Autoseed if empty database
@@ -215,12 +212,10 @@ export default function Page() {
   const handleLogin = async () => {
     try {
       const res = await googleSignIn();
-      if (res) {
-        setUser(res.user);
-        setAccessToken(res.accessToken);
-        showNotice(`Welcome AE ${res.user.displayName || 'Pat'}! Successfully authenticated.`, 'success');
-        loadAccounts(res.accessToken);
-      }
+      setUser(res.user);
+      setAccessToken(res.accessToken);
+      showNotice(`Welcome AE ${res.user.displayName || 'Pat'}! Successfully authenticated.`, 'success');
+      loadAccounts(true);
     } catch (err) {
       console.error("Login failure:", err);
       showNotice("Auth popup failed. Initializing secure Offline Mode instead.", "info");
@@ -235,7 +230,7 @@ export default function Page() {
     setAccessToken(null);
     setSelectedAccount(null);
     showNotice("AE session ended", "info");
-    loadAccounts(null);
+    loadAccounts(false);
   };
 
   // Push seed data manually
