@@ -48,7 +48,7 @@ const VERTICAL_METADATA: Record<string, { label: string; color: string; bg: stri
   corporate_learning: { label: "Corporate Learning", color: "text-cyan-700 border-cyan-200", bg: "bg-cyan-50" }
 };
 
-const SEED_TARGETS: Omit<Account, 'id' | 'createdAt'>[] = [
+const SEED_TARGETS: Omit<Account, 'id' | 'createdAt' | 'userId'>[] = [
   {
     name: "Apex Healthcare Academy",
     vertical: "continuing_education",
@@ -248,6 +248,7 @@ export default function Page() {
       if (!alreadyExists) {
         const generated: Account = {
           id: `local-seed-${Date.now()}-${idx}`,
+          userId: '',
           ...item,
           createdAt: new Date().toISOString()
         };
@@ -324,6 +325,7 @@ export default function Page() {
             } else {
               const generated: Account = {
                 id: `csv-${Date.now()}-${i}`,
+                userId: '',
                 name,
                 vertical,
                 website,
@@ -375,6 +377,7 @@ export default function Page() {
       } else {
         const added: Account = {
           id: `local-custom-${Date.now()}`,
+          userId: '',
           ...dataToPost,
           createdAt: new Date().toISOString()
         };
@@ -470,43 +473,7 @@ export default function Page() {
       showNotice(`Prospecting complete for ${selectedAccount.name}!`, 'success');
     } catch (err: any) {
       console.error("Intelligence flow aborted:", err);
-      showNotice(`AI intelligence sequence failed: ${err.message || 'Offline API constraint'}`, "error");
-      
-      // Fallback simulated outcome for gorgeous presentation when API details are restricted
-      const mockResult: ResearchResult = {
-        accountId: selectedAccount.id,
-        orgName: selectedAccount.name,
-        vertical: selectedAccount.vertical,
-        detectedLms: selectedAccount.vertical === 'continuing_education' ? 'Moodle Server v3.9' : 'Canvas LMS Integrations',
-        displacementScore: 34,
-        lmsPainPoints: [
-          "Deficient mobile responsiveness causing dropouts on on-the-go courses.",
-          "Complex grading configurations taking trainers over 15 minutes per workspace module.",
-          "Lack of visual certificate generators and compliance micro-credentialing assets."
-        ],
-        learningNews: [
-          {
-            headline: `${selectedAccount.name} Launches New Interactive Digital Skills Initiative`,
-            summary: "Expanding learning paths to deliver flexible career micro-credentials starting next quarter.",
-            source_url: selectedAccount.website || "https://google.com/search?q=LMS+news",
-            date: "May 2026"
-          },
-          {
-            headline: "E-Learning Compliance Mandates Peak Across Industry Verticals",
-            summary: "L&D directors report high attrition rates under traditional, non-gamified portals.",
-            source_url: "https://google.com/search?q=instructional+design+trends",
-            date: "June 2026"
-          }
-        ],
-        customerStoryAngle: `Showcase how a major training provider bypassed Canvas rigid tracking and saved 40% in manual administration by using D2L Brightspace's native visual workflows.`,
-        draftEmail: `Subject: Modernizing compliance pathways at ${selectedAccount.name}\n\nHi Leader of L&D,\n\nI was following your awesome interactive digital initiatives and noticed your team is likely leveraging legacy systems to track skills re-certifications. With learners requesting mobile flexibility, outdated interfaces can lead to lower compliance completion.\n\nAt D2L, we designed Brightspace specifically to provide responsive accessibility and drag-and-drop authoring. D2L clients report a marked increase in engagement within the first 30 days.\n\nLet's schedule a brief 10-minute brainstorming call to review how Brightspace can optimize your delivery pipelines.\n\nWarm regards,\nPat\nEnterprise Solutions AE, D2L`,
-        researchedAt: new Date().toISOString()
-      };
-      
-      setResearchResult(mockResult);
-      if (!user) {
-        localStorage.setItem(`local_research_${selectedAccount.id}`, JSON.stringify(mockResult));
-      }
+      showNotice(`Research failed: ${err.message || 'Gemini API unavailable'}`, "error");
     } finally {
       setIsResearching(false);
     }
@@ -945,7 +912,7 @@ Generated on ${new Date(researchResult.researchedAt).toLocaleDateString()}
                   <div className="flex flex-col items-center py-6">
                     <Loader2 className="w-8 h-8 text-rose-500 animate-spin mb-3" />
                     <p className="text-xs font-bold text-white tracking-wide uppercase">Pat&apos;s Live Google Grounding Sequence</p>
-                    <p className="text-[10px] text-slate-500 mt-1">Grounded by Google Search API & Gemini 3.5 Flash</p>
+                    <p className="text-[10px] text-slate-500 mt-1">Grounded by Google Search API & Gemini 2.0 Flash</p>
                   </div>
 
                   <div className="bg-slate-900 text-slate-300 rounded-xl p-4 text-xs select-none border border-black text-left h-28 overflow-y-auto">

@@ -64,7 +64,7 @@ export async function googleSignIn(): Promise<{ user: User; accessToken: string 
       throw new Error('Failed to get access token from Google sign-in credential');
     }
     cachedAccessToken = credential.accessToken;
-    return { user: result.user, accessToken: cachedAccessToken };
+    return { user: result.user, accessToken: credential.accessToken };
   } catch (error) {
     console.error('Sign-in error:', error);
     throw error;
@@ -99,6 +99,7 @@ export async function testConnection() {
 // Firestore operations for prospecting accounts
 export interface Account {
   id: string;
+  userId: string;
   name: string;
   vertical: string;
   website: string;
@@ -126,12 +127,19 @@ export interface ResearchResult {
   researchNotes?: string;
 }
 
-// Fetch all accounts
+// Fetch all accounts owned by the current user
 export async function getAccounts(): Promise<Account[]> {
   try {
-    const q = query(collection(db, 'accounts'), orderBy('createdAt', 'desc'));
+    const uid = auth.currentUser?.uid;
+    if (!uid) return [];
+    const q = query(
+      collection(db, 'accounts'),
+      orderBy('createdAt', 'desc')
+    );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Account));
+    return snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() } as Account))
+      .filter(a => a.userId === uid);
   } catch (error) {
     console.error('Error fetching accounts:', error);
     return [];
@@ -139,10 +147,13 @@ export async function getAccounts(): Promise<Account[]> {
 }
 
 // Add a single account
-export async function addAccount(account: Omit<Account, 'id' | 'createdAt'>): Promise<Account> {
+export async function addAccount(account: Omit<Account, 'id' | 'createdAt' | 'userId'>): Promise<Account> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error('Must be signed in to add accounts');
   const docRef = doc(collection(db, 'accounts'));
   const newAccount: Account = {
     id: docRef.id,
+    userId: uid,
     ...account,
     createdAt: new Date().toISOString()
   };
