@@ -1,0 +1,6 @@
+{
+  "name": "Prospecting Intelligence",
+  "description": "An AI-powered B2B research and outreach prospecting tool for D2L Account Executives.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

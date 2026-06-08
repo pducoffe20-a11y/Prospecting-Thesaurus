@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "account": {
+      "title": "Account",
+      "description": "An organization target for D2L B2B prospecting",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "vertical": { "type": "string", "enum": ["professional_association", "credentialing_body", "continuing_education", "trade_group", "nonprofit_education", "government_training", "corporate_learning"] },
+        "website": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "vertical"]
+    },
+    "researchResult": {
+      "title": "Research Result",
+      "description": "Surfaced learning infrastructure insights and outreach drafts for a target account",
+      "type": "object",
+      "properties": {
+        "accountId": { "type": "string" },
+        "orgName": { "type": "string" },
+        "vertical": { "type": "string" },
+        "detectedLms": { "type": "string" },
+        "displacementScore": { "type": "integer" },
+        "lmsPainPoints": {
+          "type": "array"
+        },
+        "learningNews": {
+          "type": "array"
+        },
+        "customerStoryAngle": { "type": "string" },
+        "draftEmail": { "type": "string" },
+        "researchedAt": { "type": "string", "format": "date-time" },
+        "researchNotes": { "type": "string" }
+      },
+      "required": ["accountId", "orgName", "detectedLms", "displacementScore"]
+    }
+  },
+  "firestore": {
+    "/accounts/{accountId}": {
+      "schema": "account",
+      "description": "Collection of target organizations"
+    },
+    "/accounts/{accountId}/research/{researchId}": {
+      "schema": "researchResult",
+      "description": "Prospecting research assessments for the specific organization"
+    }
+  }
+}
