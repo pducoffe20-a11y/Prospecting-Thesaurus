@@ -1,14 +1,69 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /accounts/{accountId} {
-      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    
+    // Global Safety Net (default deny catch-all)
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
-      match /research/{researchId} {
-        allow read, write: if request.auth != null
-          && get(/databases/$(database)/documents/accounts/$(accountId)).data.userId == request.auth.uid;
-      }
+    // Common helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Lead entity validation helper
+    function isValidLead(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             data.company is string && data.company.size() > 0 && data.company.size() <= 200 &&
+             data.status is string && (data.status == 'New' || data.status == 'Contacted' || data.status == 'Qualified' || data.status == 'ClosedWon' || data.status == 'ClosedLost') &&
+             data.userId == request.auth.uid &&
+             (!('email' in data) || data.email is string) &&
+             (!('phone' in data) || data.phone is string) &&
+             (!('website' in data) || data.website is string) &&
+             (!('role' in data) || data.role is string) &&
+             (!('notes' in data) || data.notes is string) &&
+             (!('score' in data) || data.score is number) &&
+             (!('aiEmail' in data) || data.aiEmail is string) &&
+             (!('aiAnalysis' in data) || data.aiAnalysis is string);
+    }
+
+    // Leads collection rules
+    match /leads/{leadId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn() && 
+                    isValidId(leadId) && 
+                    isValidLead(incoming()) &&
+                    incoming().createdAt == request.time;
+
+      allow update: if isSignedIn() &&
+                    isValidId(leadId) &&
+                    existing().userId == request.auth.uid &&
+                    isValidLead(incoming()) &&
+                    incoming().userId == request.auth.uid &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().updatedAt == request.time;
+
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
   }
 }

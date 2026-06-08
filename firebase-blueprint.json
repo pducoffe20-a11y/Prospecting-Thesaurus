@@ -1,51 +1,33 @@
 {
   "entities": {
-    "account": {
-      "title": "Account",
-      "description": "An organization target for D2L B2B prospecting",
+    "Lead": {
+      "title": "Lead",
+      "description": "A B2B prospect or sales lead with contact info and AI intelligence fields.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "vertical": { "type": "string", "enum": ["professional_association", "credentialing_body", "continuing_education", "trade_group", "nonprofit_education", "government_training", "corporate_learning"] },
+        "company": { "type": "string" },
+        "role": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
         "website": { "type": "string" },
+        "status": { "type": "string", "enum": ["New", "Contacted", "Qualified", "ClosedWon", "ClosedLost"] },
+        "score": { "type": "number" },
         "notes": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "aiEmail": { "type": "string" },
+        "aiAnalysis": { "type": "string" }
       },
-      "required": ["name", "vertical"]
-    },
-    "researchResult": {
-      "title": "Research Result",
-      "description": "Surfaced learning infrastructure insights and outreach drafts for a target account",
-      "type": "object",
-      "properties": {
-        "accountId": { "type": "string" },
-        "orgName": { "type": "string" },
-        "vertical": { "type": "string" },
-        "detectedLms": { "type": "string" },
-        "displacementScore": { "type": "integer" },
-        "lmsPainPoints": {
-          "type": "array"
-        },
-        "learningNews": {
-          "type": "array"
-        },
-        "customerStoryAngle": { "type": "string" },
-        "draftEmail": { "type": "string" },
-        "researchedAt": { "type": "string", "format": "date-time" },
-        "researchNotes": { "type": "string" }
-      },
-      "required": ["accountId", "orgName", "detectedLms", "displacementScore"]
+      "required": ["name", "company", "status", "userId", "createdAt"]
     }
   },
   "firestore": {
-    "/accounts/{accountId}": {
-      "schema": "account",
-      "description": "Collection of target organizations"
-    },
-    "/accounts/{accountId}/research/{researchId}": {
-      "schema": "researchResult",
-      "description": "Prospecting research assessments for the specific organization"
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Sales leads managed by specific users."
     }
   }
 }
